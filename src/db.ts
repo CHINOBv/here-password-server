@@ -1,5 +1,9 @@
 import mongoose, { ConnectionOptions } from "mongoose";
+import dotenv from "dotenv";
+dotenv.config();
 
+//Get URI DB from file .env
+const URI = process.env.DB_URI;
 export async function startConnection() {
   mongoose.set("useUnifiedTopology", true);
   const dbOptions: ConnectionOptions = {
@@ -13,15 +17,11 @@ export async function startConnection() {
     for more security
   */
 
-  await mongoose.connect(
-    "mongodb://localhost:27017/webcomic",
-    dbOptions,
-    (err) => {
-      if (!err) {
-        console.log("MongoDB Connection Succeeded.");
-      } else {
-        console.log("Error in DB connection: " + err);
-      }
+  await mongoose.connect(`${URI}`, dbOptions, (err) => {
+    if (!err) {
+      console.log("MongoDB Connection Succeeded.");
+    } else {
+      console.log("Error in DB connection: " + err);
     }
-  );
+  });
 }
