@@ -1,6 +1,7 @@
 import app from "./app";
 import dotenv from "dotenv";
 dotenv.config();
+import CryptoJS from "crypto-js";
 
 import { startConnection } from "./db";
 
@@ -22,5 +23,6 @@ class server {
     await this.startServer();
   }
 }
+
 const serve = new server(PORT, app);
 serve.initServer();

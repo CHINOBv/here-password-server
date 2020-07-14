@@ -7,7 +7,11 @@ const userSchema = new Schema({
     required: true,
     type: String,
   },
-  name: String,
+  name: {
+    type: String,
+    unique: false,
+    required: false,
+  },
   password: {
     required: true,
     type: String,
@@ -31,24 +35,19 @@ export interface IUser extends Document {
 
 userSchema.pre<IUser>("save", async function (next) {
   const user = this;
-  if (
-    !user.isModified("password") ||
-    !user.isModified("email") ||
-    !user.isModified("user")
-  )
-    return next();
+  if (!user.isModified("password")) return next();
   const salt = await bcrypt.genSalt(12);
   const passHash = await bcrypt.hash(user.password, salt);
-  //const emailHash = await bcrypt.hash(user.email, salt);
   user.password = await passHash;
-  //user.email = await emailHash;
   next();
 });
 
 userSchema.methods.comparePassword = async function (
   password: string
 ): Promise<boolean> {
-  return await bcrypt.compare(password, this.password);
+  const res = await bcrypt.compare(password, this.password);
+  console.log(res);
+  return res;
 };
 
 export default model<IUser>("User", userSchema);
