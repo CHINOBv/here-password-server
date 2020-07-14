@@ -26,6 +26,7 @@ export interface IUser extends Document {
   user: string;
   password: string;
   email: string;
+  comparePassword: (password: string) => Promise<boolean>;
 }
 
 userSchema.pre<IUser>("save", async function (next) {
@@ -38,10 +39,16 @@ userSchema.pre<IUser>("save", async function (next) {
     return next();
   const salt = await bcrypt.genSalt(12);
   const passHash = await bcrypt.hash(user.password, salt);
-  const emailHash = await bcrypt.hash(user.email, salt);
+  //const emailHash = await bcrypt.hash(user.email, salt);
   user.password = await passHash;
-  user.email = await emailHash;
+  //user.email = await emailHash;
   next();
 });
+
+userSchema.methods.comparePassword = async function (
+  password: string
+): Promise<boolean> {
+  return await bcrypt.compare(password, this.password);
+};
 
 export default model<IUser>("User", userSchema);
