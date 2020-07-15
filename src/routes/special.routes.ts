@@ -15,10 +15,8 @@ router.post(
   passport.authenticate("jwt", { session: false }),
   async (req: Request, res: Response): Promise<Response> => {
     const newAccount = await new Account(req.body);
-    console.log(newAccount);
-    const cr = await newAccount.save();
-    console.log(cr);
-    return res.send(cr);
+    const account = await newAccount.save();
+    return res.send(account);
   }
 );
 
@@ -103,6 +101,38 @@ router.get(
     const pass = await decrypt.toString(CryptoJS.enc.Utf8);
 
     return res.status(200).send(pass);
+  }
+);
+
+router.delete(
+  "/account",
+  passport.authenticate("jwt", { session: false }),
+  async (req: Request, res: Response): Promise<Response> => {
+    if (!req.body.user || !req.body.password) {
+      return res.status(400).json({ msg: "All Fields are Required" });
+    }
+
+    const user = await User.findOne({ user: req.body.user });
+    if (!user) {
+      return res.status(400).json({ msg: "This User no Exist" });
+    }
+
+    const isMatch = await user.comparePassword(req.body.password);
+    if (!isMatch) {
+      return res.status(400).json({ msg: "User or Passwor are Incorrect" });
+    }
+    const account = await Account.findOne({
+      userid: user._id,
+      _id: req.body.accountid,
+    });
+    if (!account) {
+      return res.status(400).json({ msg: "Account not Find" });
+    }
+    await Account.findOneAndDelete({
+      _id: account._id,
+      userid: account.userid,
+    });
+    return res.status(201).json({ msg: "Account has ben Removed" });
   }
 );
 
